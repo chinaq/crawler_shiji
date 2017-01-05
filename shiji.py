@@ -21,30 +21,32 @@ def init():
     #     '--disk-cache=true']
     options = ['--load-images=false']
     driver = webdriver.PhantomJS(executable_path='phantomjs/bin/phantomjs', service_args=options)
-    driver.set_page_load_timeout(10)
+    driver.set_page_load_timeout(1)
 
 
-def loadpage(num):
+def loadpage(page):
     global driver
     try:
-        url = "http://www.ikanman.com/comic/11314/115077.html#p=" + str(num)
+        url = "http://www.ikanman.com/comic/11314/115078.html#p=" + str(page)
         print(url)
         driver.get(url)
     except TimeoutException:  
         print('time out after XX seconds when loading page')
-        driver.execute_script('window.stop()') # 当页面加载时间超过设定时间，通过执行Javascript来stop加载，即可执行后续动作
-    finally:
-        loadimg(num)
+        # driver.execute_script('window.stop()') # 当页面加载时间超过设定时间，通过执行Javascript来stop加载，即可执行后续动作
+    # finally:
+    #     loadimg(page)
 
-def loadimg(num):
+def loadimg():
     global driver
     try:
-        element = WebDriverWait(driver, 3).until(
+        element = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.ID, "mangaFile")))
-    finally:        
-        getSave(num)
+    except TimeoutException:  
+        print('time out after XX seconds when loading img src')
+    # finally:        
+    #     getSave(page)
 
-def getSave(num):
+def getSave(vol, page):
     global driver
     # imgSrc = driver.find_element_by_id('mangaFile').get_attribute("src") + ".webp"
     imgSrc = driver.find_element_by_id('mangaFile').get_attribute("src")
@@ -53,7 +55,7 @@ def getSave(num):
         headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36", \
         "Referer": "http://www.ikanman.com/comic/11314/115077.html"})
     if r.status_code == 200:
-        with open("shiji/s1/" + str(num) + ".jpg", 'wb') as f:
+        with open("shiji/卷" + str(vol) + "/" + str(page) + ".jpg", 'wb') as f:
             r.raw.decode_content = True
             shutil.copyfileobj(r.raw, f)
     print("status code: " + str(r.status_code))
@@ -64,10 +66,14 @@ def close():
 
 
 def main():
-    for i in range(1, 138):
-        init()
-        loadpage(i)
-        close()
+    for vol in range(1, 13):
+        url = "http://www.ikanman.com/comic/11314/" + str(115076 + vol) + ".html"
+        for page in range(1, 139):
+            init()
+            loadpage(page)
+            loadimg()
+            getSave(vol, page)
+            close()
 
 # start
 main()
