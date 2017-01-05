@@ -24,10 +24,10 @@ def init():
     driver.set_page_load_timeout(1)
 
 
-def loadpage(page):
+def loadpage(vol, page):
     global driver
     try:
-        url = "http://www.ikanman.com/comic/11314/115078.html#p=" + str(page)
+        url = "http://www.ikanman.com/comic/11314/" + str(115076 + vol) + ".html#p=" + str(page)
         print(url)
         driver.get(url)
     except TimeoutException:  
@@ -66,11 +66,13 @@ def close():
 
 
 def main():
-    for vol in range(1, 13):
-        url = "http://www.ikanman.com/comic/11314/" + str(115076 + vol) + ".html"
-        for page in range(1, 139):
+    vol_start = 2
+    page_start = 138
+    for vol in range(vol_start, 13):
+        if vol > vol_start: page_start = 1      
+        for page in range(page_start, 139):
             init()
-            loadpage(page)
+            loadpage(vol, page)
             loadimg()
             getSave(vol, page)
             close()
